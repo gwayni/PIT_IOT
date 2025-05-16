@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const API = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api/',  // Base URL without auth part
+  baseURL: 'https://pit-iot.onrender.com/api',  
 });
 
 // Attach Authorization header with token on every request if available
