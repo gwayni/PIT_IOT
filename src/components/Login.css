@@ -1,0 +1,96 @@
+/* Login.css */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6); /* deep to vibrant blue */
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-container {
+  width: 100%;
+  max-width: 400px;
+  padding: 20px;
+}
+
+.login-card {
+  background: #ffffff;
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.logo {
+  font-size: 40px;
+  margin-bottom: 10px;
+}
+
+h2 {
+  margin-bottom: 20px;
+  color: #1e3a8a; /* deep blue */
+}
+
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+label {
+  text-align: left;
+  font-weight: 500;
+  font-size: 14px;
+  color: #1e3a8a;
+}
+
+input {
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 10px;
+  transition: border 0.3s;
+}
+
+input:focus {
+  border-color: #facc15; /* yellow focus */
+  outline: none;
+}
+
+button[type='submit'] {
+  padding: 12px;
+  background-color: #facc15; /* yellow */
+  color: #1e3a8a; /* blue text */
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button[type='submit']:hover {
+  background-color: #eab308; /* darker yellow on hover */
+}
+
+.redirect-text {
+  margin-top: 20px;
+  font-size: 14px;
+  color: #1e3a8a;
+}
+
+.link {
+  background: none;
+  border: none;
+  color: #3b82f6; /* blue link */
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.error-text {
+  color: #dc2626; /* red */
+  font-size: 13px;
+  margin-top: -5px;
+}

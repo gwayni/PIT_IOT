@@ -1,0 +1,77 @@
+/* Dashboard.css */
+
+body {
+  margin: 0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6); /* blue gradient background */
+  min-height: 100vh;
+}
+
+.dashboard-container {
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 24px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+h2 {
+  margin: 0;
+  color: #1e3a8a; /* deep blue */
+}
+
+.logout-btn {
+  padding: 8px 16px;
+  background-color: #facc15; /* yellow */
+  color: #1e3a8a; /* dark blue text */
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.logout-btn:hover {
+  background-color: #eab308; /* darker yellow */
+}
+
+.readings-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.reading-item {
+  padding: 16px;
+  margin-bottom: 12px;
+  background: #f1f5ff; /* soft blue background */
+  border-radius: 12px;
+  border: 1px solid #c7d2fe; /* soft border */
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.reading-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1e3a8a; /* deep blue */
+}
+
+.reading-meta {
+  font-size: 14px;
+  color: #475569; /* cool gray */
+}
+
+.reading-time {
+  font-size: 12px;
+  color: #64748b; /* slightly muted gray-blue */
+}
