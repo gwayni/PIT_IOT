@@ -2,7 +2,7 @@
   "name": "frontend",
   "private": true,
   "version": "0.0.0",
-  "homepage": "https://github.com/gwayni/PIT_IOT",
+  "homepage": "https://gwayni.github.io/PIT_IOT",
   "type": "module",
   "scripts": {
     "dev": "vite",
