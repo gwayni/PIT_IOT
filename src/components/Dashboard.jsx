@@ -9,15 +9,13 @@ const Dashboard = () => {
   const [readings, setReadings] = useState([]);
   const { logout } = useContext(AuthContext);
   const navigate = useNavigate();
-  
 
   const fetchReadings = async () => {
     try {
-      const res = await API.get('/energy-data/' );
+      const res = await API.get('/energy-data/');
       const newReadings = res.data;
       console.log('API response:', newReadings);
 
-      // Combine new readings with previous, deduplicate by timestamp, sort by newest, and keep top 5
       setReadings((prev) => {
         const combined = [...newReadings, ...prev];
         const deduped = Array.from(
@@ -39,34 +37,32 @@ const Dashboard = () => {
       window.location.reload();
       fetchReadings();
     }, 5000);
-
     return () => clearInterval(id);
   }, []);
 
-const handleLogout = async () => {
-  const accessToken = localStorage.getItem('token');
-  const refreshToken = localStorage.getItem('refreshToken');
+  const handleLogout = async () => {
+    const accessToken = localStorage.getItem('token');
+    const refreshToken = localStorage.getItem('refreshToken');
 
-  try {
-    await API.post(
-      '/auth/token/logout/',
-      { refresh: refreshToken },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-  } catch (err) {
-    console.error('Logout failed:', err);
-  } finally {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    navigate('login', { replace: true }); 
-  }
-};
-
+    try {
+      await API.post(
+        '/auth/token/logout/',
+        { refresh: refreshToken },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    } catch (err) {
+      console.error('Logout failed:', err);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      navigate('login', { replace: true });
+    }
+  };
 
   return (
     <div className="dashboard-container">
@@ -77,29 +73,42 @@ const handleLogout = async () => {
         </button>
       </div>
 
-      <ul className="readings-list">
-        {readings.length === 0 ? (
-          <li className="reading-item">No readings available.</li>
-        ) : (
-          readings.map((r, index) => (
-            <li key={`${r.timestamp || index}`} className="reading-item">
-              <span className="reading-value">
-                {typeof r.power === 'number' ? r.power.toFixed(2) : '0.00'} W
-              </span>
-              <span className="reading-meta">
-                {typeof r.voltage === 'number' ? r.voltage.toFixed(2) : '0.00'} V,{' '}
-                {typeof r.current === 'number' ? r.current.toFixed(4) : '0.0000'} A,{' '}
-                {typeof r.energy === 'number' ? r.energy.toFixed(4) : '0.0000'} kWh
-              </span>
-              <span className="reading-time">
-                {r.timestamp && !isNaN(new Date(r.timestamp))
-                  ? new Date(r.timestamp).toLocaleTimeString()
-                  : 'Timestamp missing'}
-              </span>
-            </li>
-          ))
-        )}
-      </ul>
+      <div className="table-container">
+        <table className="readings-table">
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Voltage (V)</th>
+              <th>Current (A)</th>
+              <th>Power (W)</th>
+              <th>Energy (kWh)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {readings.length === 0 ? (
+              [...Array(5)].map((_, i) => (
+                <tr key={i} className="placeholder-row">
+                  <td colSpan="5">Awaiting data...</td>
+                </tr>
+              ))
+            ) : (
+              readings.map((r, index) => (
+                <tr key={`${r.timestamp || index}`}>
+                  <td>
+                    {r.timestamp && !isNaN(new Date(r.timestamp))
+                      ? new Date(r.timestamp).toLocaleTimeString()
+                      : 'Timestamp missing'}
+                  </td>
+                  <td>{typeof r.voltage === 'number' ? r.voltage.toFixed(2) : '0.00'}</td>
+                  <td>{typeof r.current === 'number' ? r.current.toFixed(4) : '0.0000'}</td>
+                  <td>{typeof r.power === 'number' ? r.power.toFixed(2) : '0.00'}</td>
+                  <td>{typeof r.energy === 'number' ? r.energy.toFixed(4) : '0.0000'}</td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 };
