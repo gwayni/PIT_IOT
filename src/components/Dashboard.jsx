@@ -102,6 +102,10 @@ const Dashboard = () => {
         <button onClick={handleLogout} className="logout-btn">Logout</button>
       </div>
 
+      <h1 className="dashboard-title">
+        University-Wide Electricity Consumption Monitoring Dashboard
+      </h1>
+
       <div className="table-container">
         <table className="readings-table">
           <thead>
