@@ -1,85 +1,108 @@
-  #include "EmonLib.h"
-  #include <WiFi.h>
-  #include <HTTPClient.h>
-  #include <ArduinoJson.h>
+#include "EmonLib.h"
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <WiFiUdp.h>
+#include <NTPClient.h>
 
-  EnergyMonitor emon;
-  #define vCalibration 106.8
-  #define currCalibration 0.52
+// Energy monitoring
+EnergyMonitor emon;
+#define vCalibration 106.8
+#define currCalibration 0.52
 
-  const char* ssid = "XD";          // Replace with your WiFi SSID
-  const char* password = "NOW THE COCONUT";  // Replace with your WiFi password
-  const char* serverName = "https://integrative-programming.onrender.com"; // Replace with your Render.com URL
-  const char* token = "1d084e127ffa9aa4c00f9e7f4b29e206a8befee4";   // Replace with user token from Django
-  const char* deviceName = "ACD Group";         // Replace with your device name
+// WiFi credentials
+const char* ssid = "Gwapo Only";
+const char* password = "Gwaposimeggy123";
 
-  float kWh = 0;
-  unsigned long lastmillis = millis();
+// Backend API
+const char* serverName = "https://pit-iot.onrender.com"; 
+const char* token = "424621a73ab8cfe56cfd1de29bed52e19457bbf8";
+const char* deviceName = "ACD Group";
 
-  void setup() {
-    Serial.begin(9600);
-    emon.voltage(35, vCalibration, 1.7); // Voltage: input pin, calibration, phase_shift
-    emon.current(34, currCalibration);   // Current: input pin, calibration
+// Time handling
+WiFiUDP ntpUDP;
+NTPClient timeClient(ntpUDP, "pool.ntp.org", 8 * 3600, 60000); // GMT+8, update every 60s
 
-    // Connect to WiFi
-    WiFi.begin(ssid, password);
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(1000);
-      Serial.println("Connecting to WiFi...");
-    }
-    Serial.println("Connected to WiFi");
+float kWh = 0;
+unsigned long lastmillis = millis();
+
+void setup() {
+  Serial.begin(9600);
+  emon.voltage(35, vCalibration, 1.7); // pin, calibration, phase shift
+  emon.current(34, currCalibration);   // pin, calibration
+
+  // Connect to WiFi
+  WiFi.begin(ssid, password);
+  Serial.print("Connecting to WiFi");
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(1000);
+    Serial.print(".");
   }
+  Serial.println("\n✅ Connected to WiFi");
 
-  void loop() {
-  // only run every 5 seconds
+  // Initialize NTP
+  timeClient.begin();
+}
+
+void loop() {
   unsigned long now = millis();
-  if (now - lastmillis < 5000) return;
+  if (now - lastmillis < 5000) return; // every 5 seconds
   unsigned long delta = now - lastmillis;
   lastmillis = now;
 
-  // measure
+  // Measure electrical parameters
   emon.calcVI(20, 2000);
+  kWh += emon.apparentPower * (delta / 3600000000.0); // ms → kWh
 
-  // compute kWh properly (ms → hours → kWh)
-  kWh += emon.apparentPower * (delta / 3600000000.0);
-
-  // debug
-  Serial.print("Vrms: ");  Serial.print(emon.Vrms, 2);  Serial.print(" V\t");
-  Serial.print("Irms: ");  Serial.print(emon.Irms, 4);  Serial.print(" A\t");
+  // Print to Serial
+  Serial.print("📊 Vrms: "); Serial.print(emon.Vrms, 2); Serial.print(" V\t");
+  Serial.print("Irms: "); Serial.print(emon.Irms, 4); Serial.print(" A\t");
   Serial.print("Power: "); Serial.print(emon.apparentPower, 4); Serial.print(" W\t");
-  Serial.print("kWh: ");   Serial.print(kWh, 4);           Serial.println(" kWh");
+  Serial.print("kWh: "); Serial.println(kWh, 4);
 
-  // only post if we’re still connected
   if (WiFi.status() == WL_CONNECTED) {
+    timeClient.update(); // sync NTP time
+
+    // Format timestamp to ISO 8601
+    char isoTimestamp[25];
+    time_t rawTime = timeClient.getEpochTime();
+    struct tm* timeInfo = gmtime(&rawTime);
+    strftime(isoTimestamp, sizeof(isoTimestamp), "%Y-%m-%dT%H:%M:%S", timeInfo);
+
     HTTPClient http;
-    // <-- point at your DRF list/create endpoint
     String url = String(serverName) + "/api/energy-data/";
     http.begin(url);
 
-    // headers
+    // Headers
     http.addHeader("Content-Type", "application/json");
     http.addHeader("Authorization", "Token " + String(token));
 
-    // build payload
-    StaticJsonDocument<200> doc;
+    // Prepare JSON payload
+    StaticJsonDocument<256> doc;
     doc["device_name"] = deviceName;
     doc["voltage"]     = emon.Vrms;
     doc["current"]     = emon.Irms;
     doc["power"]       = emon.apparentPower;
     doc["energy"]      = kWh;
+    doc["timestamp"]   = isoTimestamp;
 
     String body;
     serializeJson(doc, body);
 
-    // POST it
+    // POST request
     int code = http.POST(body);
     if (code > 0) {
-      Serial.printf("HTTP %d – %s\n", code, http.getString().c_str());
+      String response = http.getString();
+      Serial.printf("✅ HTTP %d\nResponse: %s\n", code, response.c_str());
+      if (code == 401) {
+        Serial.println("❌ Invalid token or unauthorized – check token and permissions.");
+      }
     } else {
-      Serial.printf("POST failed, error: %d\n", code);
+      Serial.printf("❌ POST failed, error: %s\n", http.errorToString(code).c_str());
     }
+
     http.end();
   } else {
-    Serial.println("WiFi disconnected – skipping POST");
+    Serial.println("❌ WiFi disconnected – skipping POST");
   }
 }
