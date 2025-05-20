@@ -15,8 +15,9 @@ function Login() {
   try {
     const response = await axios.post(
       'https://pit-iot.onrender.com/api/auth/token/login/',
-      { username, password }
-    );
+    { username, password },
+    { withCredentials: true }
+  );
     const token = response.data.auth_token;
     localStorage.setItem('token', token);
     navigate('/dashboard');
