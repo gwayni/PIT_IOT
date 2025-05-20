@@ -1,123 +1,89 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import './Login.css';
+import { useEffect, useState } from "react"
+import { Link, useNavigate } from "react-router-dom"
+import { BiLogInCircle } from "react-icons/bi"
+import { useDispatch, useSelector } from 'react-redux'
+import { login, reset, getUserInfo } from '../features/auth/authSlice'
+import { toast } from 'react-toastify'
+import Spinner from "../components/Spinner"
 
-function Login() {
-  const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+const LoginPage = () => {
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setIsLoading(true);
+    const [formData, setFormData] = useState({
+        "email": "",
+        "password": "",
+    })
 
-    try {
-      const response = await axios.post(
-        'https://pit-iot.onrender.com/api/auth/token/login/',
-        { username, password },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        }
-      );
-      
-      const token = response.data.auth_token;
-      
-      // Store token securely
-      localStorage.setItem('token', token);
-      axios.defaults.headers.common['Authorization'] = `Token ${token}`;
-      
-      navigate('/dashboard');
-    } catch (err) {
-      console.error('Full error:', err);
-      console.error('Response data:', err.response?.data);
-      
-      if (err.response) {
-        // Handle different error cases
-        if (err.response.status === 400) {
-          setError('Invalid username or password');
-        } else if (err.response.status === 403) {
-          setError('Account not active. Please verify your email.');
-        } else {
-          setError(`Server error: ${err.response.status}`);
-        }
-      } else if (err.request) {
-        setError('Network error. Please check your connection.');
-      } else {
-        setError('An unexpected error occurred');
-      }
-    } finally {
-      setIsLoading(false);
+    const { email, password } = formData
+
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+
+    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
+
+    const handleChange = (e) => {
+        setFormData((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        })
+        )
     }
-  };
 
-  return (
-    <div className="login-container">
-      <div className="login-card">
-        <div className="logo">🔒</div>
-        <h2>Welcome Back</h2>
-        
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            autoComplete="username"
-          />
+    const handleSubmit = (e) => {
+        e.preventDefault()
 
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            autoComplete="current-password"
-          />
+        const userData = {
+            email,
+            password,
+        }
+        dispatch(login(userData))
+    }
 
-          {error && (
-            <div className="error-text">
-              {error}
-              <br />
-              <button 
-                onClick={() => window.location.reload()} 
-                className="retry-button"
-              >
-                Try Again
-              </button>
+
+    useEffect(() => {
+        if (isError) {
+            toast.error(message)
+        }
+
+        if (isSuccess || user) {
+            navigate("/dashboard")
+        }
+
+        dispatch(reset())
+        dispatch(getUserInfo())
+
+    }, [isError, isSuccess, user, navigate, dispatch])
+
+
+
+    return (
+        <>
+            <div className="container auth__container">
+                <h1 className="main__title animate-fade-slide">Login <BiLogInCircle /></h1>
+
+                {isLoading && <Spinner />}
+
+                <form className="auth__form animate-fade-slide">
+                    <input className="animate-fade-slide" style={{ animationDelay: "0.1s" }} type="text"
+                        placeholder="email"
+                        name="email"
+                        onChange={handleChange}
+                        value={email}
+                        required
+                    />
+                    <input className="animate-fade-slide" style={{ animationDelay: "0.2s" }} type="password"
+                        placeholder="password"
+                        name="password"
+                        onChange={handleChange}
+                        value={password}
+                        required
+                    />
+                    <Link className="animate-fade-slide" to="/reset-password" style={{ animationDelay: "0.3s" }}>Forget Password ?</Link>
+
+                    <button className="btn btn-primary animate-fade-slide" type="submit" style={{ animationDelay: "0.4s" }} onClick={handleSubmit}>Login</button>
+                </form>
             </div>
-          )}
-
-          <button 
-            type="submit" 
-            disabled={isLoading}
-          >
-            {isLoading ? 'Signing In...' : 'Sign In'}
-          </button>
-        </form>
-
-        <p className="redirect-text">
-          Don't have an account?{' '}
-          <button 
-            className="link" 
-            onClick={() => navigate('/register')}
-            disabled={isLoading}
-          >
-            Register
-          </button>
-        </p>
-      </div>
-    </div>
-  );
+        </>
+    )
 }
 
-export default Login;
+export default LoginPage

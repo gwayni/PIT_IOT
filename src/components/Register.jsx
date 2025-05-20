@@ -1,108 +1,129 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import { useEffect, useState } from 'react'
+import { toast } from 'react-toastify'
+import { BiUser } from 'react-icons/bi'
+import { useDispatch, useSelector } from 'react-redux'
+import { register, reset } from '../features/auth/authSlice'
+import { useNavigate } from 'react-router-dom'
+import Spinner from '../components/Spinner'
 
-function Register() {
-  const [form, setForm] = useState({ 
-    username: '', 
-    email: '', 
-    password: '' 
-  });
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+const RegisterPage = () => {
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
+    const [formData, setFormData] = useState({
+        "first_name": "",
+        "last_name": "",
+        "email": "",
+        "password": "",
+        "re_password": "",
+    })
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    
-    try {
-      const response = await axios.post(
-        'https://pit-iot.onrender.com/api/auth/users/',
-        form
-      );
-      
-      console.log('Registration successful:', response.data);
-      navigate('/login');
-    } catch (err) {
-      console.error('Registration error:', err.response?.data);
-      
-      // Format Djoser error messages
-      if (err.response?.data) {
-        const errorMessages = [];
+    const { first_name, last_name, email, password, re_password } = formData
+
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
+
+    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
+
+    const handleChange = (e) => {
+        setFormData((prev) => ({
+            ...prev,
+            [e.target.name]: e.target.value
+        })
+        )
+    }
+
+    const handleSubmit = (e) => {
         
-        for (const [field, errors] of Object.entries(err.response.data)) {
-          if (Array.isArray(errors)) {
-            errorMessages.push(`${field}: ${errors.join(', ')}`);
-          } else if (typeof errors === 'string') {
-            errorMessages.push(errors);
-          }
+        e.preventDefault()
+        if (!first_name || !last_name || !email || !password || !re_password) {
+            toast.error('Please fill in all fields');
+            return;
         }
         
-        setError(errorMessages.join('\n'));
-      } else {
-        setError('Registration failed. Please try again.');
-      }
+        if (password.length < 6) {
+            toast.error('Password must be at least 6 characters');
+            return;
+        }
+
+        if (password !== re_password) {
+            toast.error("Passwords do not match")
+        }
+        const userData = {
+            first_name,
+            last_name,
+            email,
+            password,
+            re_password
+        }
+        dispatch(register(userData))
+        
     }
-  };
 
-  return (
-    <div className="register-container">
-      <div className="register-card">
-        <h2>Register</h2>
-        {error && (
-          <div className="error-message">
-            {error.split('\n').map((line, i) => (
-              <p key={i}>{line}</p>
-            ))}
-          </div>
-        )}
-        <form onSubmit={handleSubmit}>
-          <label htmlFor="email">Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
 
-          <label htmlFor="username">Username</label>
-          <input
-            id="username"
-            name="username"
-            type="text"
-            value={form.username}
-            onChange={handleChange}
-            required
-          />
+    useEffect(() => {
+        if (isError) {
+            toast.error(message)
+        }
 
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
+        if (isSuccess && !user) {
+            toast.success("Activation email sent");
+            navigate("/login");
+        }
 
-          <button type="submit">Register</button>
-        </form>
+        dispatch(reset())
 
-        <p className="redirect-text">
-          Already have an account?{' '}
-          <button className="link" onClick={() => navigate('/login')}>
-            Login
-          </button>
-        </p>
-      </div>
-    </div>
-  );
+    }, [isError, isSuccess, user, navigate, dispatch])
+
+
+
+    return (
+        <>
+            <div className="container auth__container">
+                <h1 className="main__title animate-fade-slide">Register <BiUser /> </h1>
+
+                {isLoading && <Spinner />}
+
+                <form className="auth__form animate-fade-slide" onSubmit={handleSubmit}>
+                    <input className="animate-fade-slide" style={{ animationDelay: "0.1s" }} type="text"
+                        placeholder="First Name"
+                        name="first_name"
+                        onChange={handleChange}
+                        value={first_name}
+                        required
+                    />
+                    <input className="animate-fade-slide" style={{ animationDelay: "0.2s" }} type="text"
+                        placeholder="Last Name"
+                        name="last_name"
+                        onChange={handleChange}
+                        value={last_name}
+                        required
+                    />
+                    <input className="animate-fade-slide" style={{ animationDelay: "0.3s" }} type="email"
+                        placeholder="Email"
+                        name="email"
+                        onChange={handleChange}
+                        value={email}
+                        required
+                    />
+                    <input className="animate-fade-slide" style={{ animationDelay: "0.4s" }} type="password"
+                        placeholder="Password"
+                        name="password"
+                        onChange={handleChange}
+                        value={password}
+                        required
+                    />
+                    <input className="animate-fade-slide" style={{ animationDelay: "0.5s" }} type="password"
+                        placeholder="Retype Password"
+                        name="re_password"
+                        onChange={handleChange}
+                        value={re_password}
+                        required
+                    />
+
+                    <button className="btn btn-primary animate-fade-slide" style={{ animationDelay: "0.6s" }} type="submit" >Register</button>
+                </form>
+            </div>
+        </>
+    )
 }
 
-export default Register;
+export default RegisterPage
