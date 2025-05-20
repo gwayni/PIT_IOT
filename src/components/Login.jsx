@@ -1,103 +1,94 @@
-import { useEffect, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
-import { BiLogInCircle } from "react-icons/bi"
-import { useDispatch, useSelector } from 'react-redux'
-import { login, reset, getUserInfo } from '../features/auth/authSlice'
-import { toast } from 'react-toastify'
-import Spinner from "../components/Spinner"
+import { useState, useEffect, useContext } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { BiLogInCircle } from "react-icons/bi";
+import { AuthContext } from "../context/AuthContext";
+import { toast } from "react-toastify";
+import Spinner from "../components/Spinner";
 
 const LoginPage = () => {
+  const [formData, setFormData] = useState({
+    username: "",
+    password: "",
+  });
 
-    const [formData, setFormData] = useState({
-        "username": "",
-        "password": "",
-    })
+  const { username, password } = formData;
 
-    const { username, password } = formData
+  const { login, user, loading, error } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const dispatch = useDispatch()
-    const navigate = useNavigate()
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
 
-    const { user, isLoading, isError, isSuccess, message } = useSelector((state) => state.auth)
-
-    const handleChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }))
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      await login({ username, password });
+    } catch (err) {
+      // Error is already set in context, but you can notify here too
+      toast.error("Login failed. Please check your credentials.");
     }
+  };
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-
-        const userData = {
-            username,
-            password,
-        }
-        dispatch(login(userData))
+  useEffect(() => {
+    if (error) {
+      toast.error(error);
     }
+    if (user) {
+      navigate("/dashboard");
+    }
+  }, [error, user, navigate]);
 
-    useEffect(() => {
-        if (isError) {
-            toast.error(message)
-        }
+  return (
+    <div className="container auth__container">
+      <h1 className="main__title animate-fade-slide">
+        Login <BiLogInCircle />
+      </h1>
 
-        if (isSuccess || user) {
-            navigate("/dashboard")
-        }
+      {loading && <Spinner />}
 
-        dispatch(reset())
-        dispatch(getUserInfo())
-    }, [isError, isSuccess, user, navigate, dispatch])
+      <form className="auth__form animate-fade-slide" onSubmit={handleSubmit}>
+        <input
+          className="animate-fade-slide"
+          style={{ animationDelay: "0.1s" }}
+          type="text"
+          placeholder="Username"
+          name="username"
+          value={username}
+          onChange={handleChange}
+          required
+        />
+        <input
+          className="animate-fade-slide"
+          style={{ animationDelay: "0.2s" }}
+          type="password"
+          placeholder="Password"
+          name="password"
+          value={password}
+          onChange={handleChange}
+          required
+        />
+        <Link
+          className="animate-fade-slide"
+          to="/reset-password"
+          style={{ animationDelay: "0.3s" }}
+        >
+          Forget Password?
+        </Link>
 
-    return (
-        <>
-            <div className="container auth__container">
-                <h1 className="main__title animate-fade-slide">Login <BiLogInCircle /></h1>
+        <button
+          className="btn btn-primary animate-fade-slide"
+          type="submit"
+          style={{ animationDelay: "0.4s" }}
+        >
+          Login
+        </button>
+      </form>
+    </div>
+  );
+};
 
-                {isLoading && <Spinner />}
-
-                <form className="auth__form animate-fade-slide">
-                    <input
-                        className="animate-fade-slide"
-                        style={{ animationDelay: "0.1s" }}
-                        type="text"
-                        placeholder="Username"
-                        name="username"
-                        onChange={handleChange}
-                        value={username}
-                        required
-                    />
-                    <input
-                        className="animate-fade-slide"
-                        style={{ animationDelay: "0.2s" }}
-                        type="password"
-                        placeholder="Password"
-                        name="password"
-                        onChange={handleChange}
-                        value={password}
-                        required
-                    />
-                    <Link
-                        className="animate-fade-slide"
-                        to="/reset-password"
-                        style={{ animationDelay: "0.3s" }}
-                    >
-                        Forget Password?
-                    </Link>
-
-                    <button
-                        className="btn btn-primary animate-fade-slide"
-                        type="submit"
-                        style={{ animationDelay: "0.4s" }}
-                        onClick={handleSubmit}
-                    >
-                        Login
-                    </button>
-                </form>
-            </div>
-        </>
-    )
-}
-
-export default LoginPage
+export default LoginPage;
