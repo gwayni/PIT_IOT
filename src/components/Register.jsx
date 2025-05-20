@@ -1,10 +1,14 @@
-import { useContext, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import axios from 'axios';
 
 function Register() {
-  const [form, setForm] = useState({ username: '', email: '', password: '' });
-  const { register } = useContext(AuthContext);
+  const [form, setForm] = useState({ 
+    username: '', 
+    email: '', 
+    password: '' 
+  });
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -12,52 +16,92 @@ function Register() {
   };
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    await register(form);
-    navigate('/login');
-  } catch (error) {
-    // Try to parse JSON error messages if possible
-    let message = error.message;
+    e.preventDefault();
+    setError(null);
+    
     try {
-      const data = JSON.parse(error.message);
-      // Format the error messages nicely
-      message = Object.entries(data)
-        .map(([field, errors]) => `${field}: ${errors.join(', ')}`)
-        .join('\n');
-    } catch {
-      // Keep the original error.message if JSON parse fails
+      const response = await axios.post(
+        'https://pit-iot.onrender.com/api/auth/users/',
+        form
+      );
+      
+      console.log('Registration successful:', response.data);
+      navigate('/login');
+    } catch (err) {
+      console.error('Registration error:', err.response?.data);
+      
+      // Format Djoser error messages
+      if (err.response?.data) {
+        const errorMessages = [];
+        
+        for (const [field, errors] of Object.entries(err.response.data)) {
+          if (Array.isArray(errors)) {
+            errorMessages.push(`${field}: ${errors.join(', ')}`);
+          } else if (typeof errors === 'string') {
+            errorMessages.push(errors);
+          }
+        }
+        
+        setError(errorMessages.join('\n'));
+      } else {
+        setError('Registration failed. Please try again.');
+      }
     }
-    alert('Registration failed:\n' + message);
-  }
-};
-
+  };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>Register</h2>
-      <input
-        name="email"
-        type="email"
-        onChange={handleChange}
-        placeholder="Email"
-        required
-      />
-      <input
-        name="username"
-        onChange={handleChange}
-        placeholder="Username"
-        required
-      />
-      <input
-        name="password"
-        type="password"
-        onChange={handleChange}
-        placeholder="Password"
-        required
-      />
-      <button type="submit">Register</button>
-    </form>
+    <div className="register-container">
+      <div className="register-card">
+        <h2>Register</h2>
+        {error && (
+          <div className="error-message">
+            {error.split('\n').map((line, i) => (
+              <p key={i}>{line}</p>
+            ))}
+          </div>
+        )}
+        <form onSubmit={handleSubmit}>
+          <label htmlFor="email">Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+
+          <label htmlFor="username">Username</label>
+          <input
+            id="username"
+            name="username"
+            type="text"
+            value={form.username}
+            onChange={handleChange}
+            required
+          />
+
+          <label htmlFor="password">Password</label>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+
+          <button type="submit">Register</button>
+        </form>
+
+        <p className="redirect-text">
+          Already have an account?{' '}
+          <button className="link" onClick={() => navigate('/login')}>
+            Login
+          </button>
+        </p>
+      </div>
+    </div>
   );
 }
 

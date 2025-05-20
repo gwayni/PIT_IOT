@@ -10,29 +10,40 @@ function Login() {
   const [error, setError] = useState('');
 
   const handleSubmit = async (e) => {
-  e.preventDefault();
-  setError('');
-  try {
-    const response = await axios.post(
-      'https://pit-iot.onrender.com/api/auth/token/login/',
-    { username, password },
-    { withCredentials: true }
-  );
-    const token = response.data.auth_token;
-    localStorage.setItem('token', token);
-    navigate('/dashboard');
-  } catch (err) {
-    console.error('Login error:', err.response?.data || err.message);
-    setError('Invalid username or password');
-  }
-};
-
+    e.preventDefault();
+    setError('');
+    
+    try {
+      const response = await axios.post(
+        'https://pit-iot.onrender.com/api/auth/token/login/',
+        { username, password }
+      );
+      
+      const token = response.data.auth_token;
+      localStorage.setItem('token', token);
+      
+      // Set default Authorization header for future requests
+      axios.defaults.headers.common['Authorization'] = `Token ${token}`;
+      
+      navigate('/dashboard');
+    } catch (err) {
+      console.error('Login error:', err.response?.data);
+      
+      // Handle Djoser error responses
+      if (err.response?.data?.non_field_errors) {
+        setError(err.response.data.non_field_errors.join(' '));
+      } else {
+        setError('Invalid username or password');
+      }
+    }
+  };
 
   return (
     <div className="login-container">
       <div className="login-card">
         <div className="logo">🔒</div>
         <h2>Welcome Back</h2>
+        
         <form onSubmit={handleSubmit}>
           <label htmlFor="username">Username</label>
           <input
@@ -58,7 +69,7 @@ function Login() {
         </form>
 
         <p className="redirect-text">
-          Don’t have an account?{' '}
+          Don't have an account?{' '}
           <button className="link" onClick={() => navigate('/register')}>
             Register
           </button>
