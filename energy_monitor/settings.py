@@ -166,6 +166,10 @@ CORS_ALLOWED_ORIGINS = [
 ]# Allow credentials (e.g., cookies, authorization headers)
 CORS_ALLOW_CREDENTIALS = True
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://pit-iot.onrender.com",
+]
+
 # Allow all headers (simplify for development)
 CORS_ALLOW_ALL_HEADERS = True  # Or specify explicitly as you did
 
