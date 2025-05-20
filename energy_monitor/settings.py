@@ -112,7 +112,7 @@ DATABASES = {
 }
 
 if os.environ.get('DATABASE_URL'):
-          DATABASES["default"] = dj_database_url.parse("postgresql://backend_iot_nejo_user:rF8pp0xzDT7rhguOiQFtk2Q2SWhzf3Nh@dpg-d0m81jidbo4c73cjg9p0-a.singapore-postgres.render.com/backend_iot_nejo")
+          DATABASES["default"] = dj_database_url.parse("postgresql://backendapipit_user:mma4MAD0AqKKW1n8z1Bx6JryT0eP6qPA@dpg-d0icf13e5dus738bpqr0-a.oregon-postgres.render.com/backendapipit")
 
 
 
@@ -159,7 +159,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  
-    "https://gwayni.github.io",
+    "https://bluerat1.github.io",
     "http://localhost:8000",
     "http://127.0.0.1:8000",      
 ]# Allow credentials (e.g., cookies, authorization headers)
