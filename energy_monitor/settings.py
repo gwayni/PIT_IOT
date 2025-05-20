@@ -112,7 +112,7 @@ DATABASES = {
 }
 
 if os.environ.get('DATABASE_URL'):
-          DATABASES["default"] = dj_database_url.parse("postgresql://backend_iot_nejo_user:rF8pp0xzDT7rhguOiQFtk2Q2SWhzf3Nh@dpg-d0m81jidbo4c73cjg9p0-a.singapore-postgres.render.com/backend_iot_nejo")
+          DATABASES["default"] = dj_database_url.parse("postgresql://iot_3315_user:Y86vTtMUfxoexsUSqL3O05lKSY9mKQRN@dpg-d0m7tb3uibrs738798g0-a.singapore-postgres.render.com/iot_3315")
 
 
 
