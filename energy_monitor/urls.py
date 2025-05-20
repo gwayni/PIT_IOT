@@ -13,5 +13,4 @@ urlpatterns = [
     # Djoser token endpoints
     path('api/auth/', include('djoser.urls.authtoken')),
 
-    path('', lambda request: redirect('/admin/')),
 ]
