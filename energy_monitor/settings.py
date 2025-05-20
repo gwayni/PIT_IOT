@@ -68,7 +68,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 # settings.py
@@ -113,7 +112,7 @@ DATABASES = {
 }
 
 if os.environ.get('DATABASE_URL'):
-          DATABASES["default"] = dj_database_url.parse("postgresql://iot_3315_user:Y86vTtMUfxoexsUSqL3O05lKSY9mKQRN@dpg-d0m7tb3uibrs738798g0-a.singapore-postgres.render.com/iot_3315")
+          DATABASES["default"] = dj_database_url.parse("postgresql://backend_iot_nejo_user:rF8pp0xzDT7rhguOiQFtk2Q2SWhzf3Nh@dpg-d0m81jidbo4c73cjg9p0-a.singapore-postgres.render.com/backend_iot_nejo")
 
 
 
@@ -151,8 +150,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
-STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
