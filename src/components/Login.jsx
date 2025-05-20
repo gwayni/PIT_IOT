@@ -9,11 +9,11 @@ import Spinner from "../components/Spinner"
 const LoginPage = () => {
 
     const [formData, setFormData] = useState({
-        "email": "",
+        "username": "",
         "password": "",
     })
 
-    const { email, password } = formData
+    const { username, password } = formData
 
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -24,20 +24,18 @@ const LoginPage = () => {
         setFormData((prev) => ({
             ...prev,
             [e.target.name]: e.target.value
-        })
-        )
+        }))
     }
 
     const handleSubmit = (e) => {
         e.preventDefault()
 
         const userData = {
-            email,
+            username,
             password,
         }
         dispatch(login(userData))
     }
-
 
     useEffect(() => {
         if (isError) {
@@ -50,10 +48,7 @@ const LoginPage = () => {
 
         dispatch(reset())
         dispatch(getUserInfo())
-
     }, [isError, isSuccess, user, navigate, dispatch])
-
-
 
     return (
         <>
@@ -63,23 +58,42 @@ const LoginPage = () => {
                 {isLoading && <Spinner />}
 
                 <form className="auth__form animate-fade-slide">
-                    <input className="animate-fade-slide" style={{ animationDelay: "0.1s" }} type="text"
-                        placeholder="email"
-                        name="email"
+                    <input
+                        className="animate-fade-slide"
+                        style={{ animationDelay: "0.1s" }}
+                        type="text"
+                        placeholder="Username"
+                        name="username"
                         onChange={handleChange}
-                        value={email}
+                        value={username}
                         required
                     />
-                    <input className="animate-fade-slide" style={{ animationDelay: "0.2s" }} type="password"
-                        placeholder="password"
+                    <input
+                        className="animate-fade-slide"
+                        style={{ animationDelay: "0.2s" }}
+                        type="password"
+                        placeholder="Password"
                         name="password"
                         onChange={handleChange}
                         value={password}
                         required
                     />
-                    <Link className="animate-fade-slide" to="/reset-password" style={{ animationDelay: "0.3s" }}>Forget Password ?</Link>
+                    <Link
+                        className="animate-fade-slide"
+                        to="/reset-password"
+                        style={{ animationDelay: "0.3s" }}
+                    >
+                        Forget Password?
+                    </Link>
 
-                    <button className="btn btn-primary animate-fade-slide" type="submit" style={{ animationDelay: "0.4s" }} onClick={handleSubmit}>Login</button>
+                    <button
+                        className="btn btn-primary animate-fade-slide"
+                        type="submit"
+                        style={{ animationDelay: "0.4s" }}
+                        onClick={handleSubmit}
+                    >
+                        Login
+                    </button>
                 </form>
             </div>
         </>
