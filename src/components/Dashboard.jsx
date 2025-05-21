@@ -95,14 +95,6 @@ const Dashboard = () => {
     energy: '#ef4444',
   };
 
-  const isStaleData = () => {
-    if (readings.length === 0) return true;
-    const latestTimestamp = new Date(readings[0].timestamp);
-    const now = new Date();
-    const diffInSeconds = (now - latestTimestamp) / 1000;
-    return diffInSeconds > 10; // Stale if older than 10 seconds
-  };
-
   return (
     <div className="dashboard-container">
       <div className="dashboard-header">
@@ -126,7 +118,7 @@ const Dashboard = () => {
             </tr>
           </thead>
           <tbody>
-            {readings.length === 0 || isStaleData() ? (
+            {readings.length === 0 ? (
               [...Array(5)].map((_, i) => (
                 <tr key={i} className="placeholder-row">
                   <td colSpan="5">Awaiting data...</td>
