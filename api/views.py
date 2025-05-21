@@ -7,16 +7,18 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils.timezone import now, timedelta
 from .models import EnergyData, DeviceStatus
 from .serializers import EnergyDataSerializer
-from django.utils.timezone import now, timedelta
-
 
 class EnergyDataViewSet(viewsets.ModelViewSet):
+    queryset = EnergyData.objects.all()
     serializer_class = EnergyDataSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-    def get_queryset(self):
-        ten_sec_ago = now() - timedelta(seconds=10)
-        return EnergyData.objects.filter(timestamp__gte=ten_sec_ago)
+    def perform_create(self, serializer):
+        data = serializer.save()
+        DeviceStatus.objects.update_or_create(
+            device_name=data.device_name,
+            defaults={'last_seen': now()}
+        )
 
 class ClearEnergyDataView(APIView):
     authentication_classes = [TokenAuthentication]
