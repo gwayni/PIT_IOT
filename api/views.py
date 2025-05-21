@@ -9,10 +9,14 @@ from rest_framework.permissions import IsAuthenticated
 from .models import EnergyData
 
 class EnergyDataViewSet(viewsets.ModelViewSet):
-
-    queryset = EnergyData.objects.all()
     serializer_class = EnergyDataSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return EnergyData.objects.filter(user=self.request.user).order_by('-timestamp')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class ClearEnergyDataView(APIView):
     authentication_classes = [TokenAuthentication]
