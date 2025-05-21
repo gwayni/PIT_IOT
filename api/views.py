@@ -1,18 +1,21 @@
-from rest_framework import viewsets, permissions
-from .models import EnergyData
-from .serializers import EnergyDataSerializer
-from rest_framework.views import APIView
+from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
 from .models import EnergyData
+from .serializers import EnergyDataSerializer
 
 class EnergyDataViewSet(viewsets.ModelViewSet):
-
     queryset = EnergyData.objects.all()
     serializer_class = EnergyDataSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response({"status": "created"}, status=status.HTTP_201_CREATED)
 
 class ClearEnergyDataView(APIView):
     authentication_classes = [TokenAuthentication]
